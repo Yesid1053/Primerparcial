@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('./templates/header.ejs') %>
+</head>
+<body>
+   <div class="container">
+    <h1>Marvel studio</h1>
+    <h1>
+        La cantidad de pelicualas es de = <%= data.size %>
+    </h1>
+    <div>
+        <label for="filtroTitulo">Buscar películas por título:</label>
+        <input type="text" id="filtroTitulo" name="filtroTitulo" onkeyup="filtrarPeliculas()" placeholder="Ingrese el título">
+        <br>
+        <label for="filtroAnio">Buscar películas por año de lanzamiento:</label>
+        <input type="number" id="filtroAnio" name="filtroAnio" onkeyup="filtrarPeliculas()" placeholder="Ingrese el año">
+        <br>
+        <label for="filtroInicio">Filtro de fecha de lanzamiento - Inicio:</label>
+        <input type="date" id="filtroInicio" name="filtroInicio" onchange="filtrarPeliculas()">
+        <br>
+        <label for="filtroFin">Filtro de fecha de lanzamiento - Fin:</label>
+        <input type="date" id="filtroFin" name="filtroFin" onchange="filtrarPeliculas()">
+        <br>
+        <button onclick="limpiarFiltro()">Limpiar filtro</button>
+        <button onclick="filtrarPeliculas()">Buscar</button>
+    </div>
+    <div class="card">
+        <% if (data.size > 0) { %>
+
+
+            <div class="table-responsive-xl">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>title</th>
+                            <th>phase</th>
+                            <th>category_name</th>
+                            <th>release_year</th>
+                            <th>running_time</th>
+                            <th>rating_name</th>
+                            <th>disc_format_name</th>
+                            <th>number_discs</th>
+                            <th>viewing_format_name</th>
+                            <th>aspect_ratio_name</th>
+                            <th>status</th>
+                            <th>release_date</th>
+                            <th>budget</th>
+                            <th>gross</th>
+                            <th>time_stamp</th>                    
+                        </tr>
+                    </thead>
+                    <tbody id="tablaPeliculas">
+                        <% data.forEach((v, k) => { %>
+                            <tr id="fila<%= v.movie_id %>">
+                                <td><%= v.movie_id %></td>
+                                <td><%= v.title %></td>
+                                <td><%= v.phase %></td>
+                                <td><%= v.category_name %></td>
+                                <td><%= v.release_year %></td>
+                                <td><%= v.running_time %></td>
+                                <td><%= v.running_time %></td>
+                                <td><%= v.rating_name %></td>
+                                <td><%= v.disc_format_name %></td>
+                                <td><%= v.number_discs %></td>
+                                <td><%= v.viewing_format_name %></td>
+                                <td><%= v.aspect_ratio_name %></td>
+                                <td><%= v.status %></td>
+                                <td><%= v.release_date %></td>
+                                <td><%= v.budget %></td>
+                                <td><%= v.gross %></td>
+                                <td><%= v.time_stamp %></td>
+                                <td><button onclick="eliminarRegistro('<%= v.movie_id %>')">Eliminar</button></td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+        
+                </table>
+        
+            </div>
+            
+            
+        <%  } else {%>
+            <h1> No hay datos </h1>
+        <% } %>
+    </div>
+
+   </div>
+
+   <script>
+      function filtrarPeliculas() {
+         const filtroTitulo = document.getElementById("filtroTitulo").value.toLowerCase();
+         const filtroAnio = document.getElementById("filtroAnio").value;
+         const filtroInicio = document.getElementById("filtroInicio").value;
+         const filtroFin = document.getElementById("filtroFin").value;
+         const tablaPeliculas = document.getElementById("tablaPeliculas");
+         const filas = tablaPeliculas.getElementsByTagName("tr");
+
+         for (let i = 0; i < filas.length; i++) {
+            const celdaTitulo = filas[i].getElementsByTagName("td")[1];
+            const celdaAnio = filas[i].getElementsByTagName("td")[4];
+            const celdaFecha = filas[i].getElementsByTagName("td")[12];
+            if (celdaTitulo && celdaAnio && celdaFecha) {
+               const titulo = celdaTitulo.textContent.toLowerCase();
+               const anio = celdaAnio.textContent;
+               const fecha = celdaFecha.textContent;
+
+               const fechaInicio = new Date(filtroInicio);
+               const fechaFin = new Date(filtroFin);
+               const fechaPelicula = new Date(fecha.replace(/-/g, "/")); // Reemplazar guiones por barras
+
+               const mostrarFila = (
+                  titulo.includes(filtroTitulo) &&
+                  anio.startsWith(filtroAnio) &&
+                  (!filtroInicio || fechaPelicula >= fechaInicio) &&
+                  (!filtroFin || fechaPelicula <= fechaFin)
+               );
+               filas[i].style.display = mostrarFila ? "" : "none";
+            }
+         }
+      }
+
+      function limpiarFiltro() {
+         document.getElementById("filtroTitulo").value = "";
+         document.getElementById("filtroAnio").value = "";
+         document.getElementById("filtroInicio").value = "";
+         document.getElementById("filtroFin").value = "";
+         filtrarPeliculas();
+      }
+
+      function eliminarRegistro(id) {
+        const fila = document.getElementById("fila" + id);
+        if (fila) {
+          const url = "/registros/" + id;
+
+          fetch(url, {
+            method: "DELETE",
+          })
+            .then((response) => {
+              if (response.ok) {
+                fila.parentNode.removeChild(fila);
+              } else {
+                console.error("Error al eliminar el registro");
+              }
+            })
+            .catch((error) => {
+              console.error("Error al realizar la solicitud:", error);
+            });
+        }
+      }
+   </script>
+
+</body>
+</html>
